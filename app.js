@@ -92,16 +92,30 @@ async function cerca() {
       m = draws.filter(x => x.d === d && (!h || x.h === h));
       if (!m.length) {
         const t = Date.parse(d), near = draws.reduce((a, x) => Math.abs(Date.parse(x.d) - t) < Math.abs(Date.parse(a.d) - t) ? x : a);
-        out.innerHTML = `<p class="mu">Nessuna estrazione ${h ? 'alle ' + h + ' ' : ''}del ${fmt(d)}. Storico disponibile dal ${fmt(draws.at(-1).d)} al ${fmt(draws[0].d)}. La più vicina:</p><div class="grid">${card(g, near)}</div>`;
+        await mostra(g, draws.indexOf(near), `Nessuna estrazione ${h ? 'alle ' + h + ' ' : ''}del ${fmt(d)} (storico dal ${fmt(draws.at(-1).d)} al ${fmt(draws[0].d)}). Mostro la più vicina.`);
         return;
       }
-    } else if (n) m = draws.filter(x => x.n === n);
+      if (m.length === 1) { await mostra(g, draws.indexOf(m[0])); return; }
+    } else if (n) { m = draws.filter(x => x.n === n); if (m.length === 1) { await mostra(g, draws.indexOf(m[0])); return; } }
     else { out.textContent = 'Scegli una data oppure un numero di estrazione.'; return; }
     out.innerHTML = m.length
       ? `<p class="mu">${m.length} risultat${m.length > 1 ? 'i' : 'o'}${m.length > 30 ? ' (primi 30)' : ''}</p><div class="grid">${m.slice(0, 30).map(x => card(g, x)).join('')}</div>`
       : 'Nessun risultato.';
   } catch { out.textContent = 'Storico non disponibile offline: riprova con la connessione attiva.'; }
 }
+
+// Mostra una singola estrazione con le frecce per passare alla precedente (◀) o alla successiva (▶) dello stesso gioco.
+let cur = null;
+async function mostra(g, i, nota = '') {
+  const draws = await load(g), d = draws[i]; cur = { g, i };
+  $('sd').value = d.d;
+  if (g === 'wflclassico') { await aggiornaRicerca(); $('sh').value = d.h; }
+  const btn = (s, off, lab, sym) => `<button data-s="${s}" ${off ? 'disabled' : ''} aria-label="${lab}" title="${lab}">${sym}</button>`;
+  $('sout').innerHTML = (nota ? `<p class="mu">${nota}</p>` : '') +
+    `<div class="nav">${btn(1, i >= draws.length - 1, 'Estrazione precedente', '◀')}<span class="mu">precedente · successiva</span>${btn(-1, i === 0, 'Estrazione successiva', '▶')}</div>` +
+    `<div class="grid">${card(g, d)}</div>`;
+}
+$('sout').onclick = e => { const b = e.target.closest('[data-s]'); if (b && cur) mostra(cur.g, cur.i + +b.dataset.s); };
 
 $('sg').innerHTML = Object.entries(GAMES).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
 $('shl').style.display = 'none';
