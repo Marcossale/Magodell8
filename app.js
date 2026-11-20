@@ -70,5 +70,42 @@ async function calcola() {
   btn.disabled = false;
 }
 
+// --- Ricerca di una singola estrazione (gioco + data [+ ora], oppure numero di estrazione) ---
+async function aggiornaRicerca() {
+  const g = $('sg').value; $('shl').style.display = g === 'wflclassico' ? '' : 'none';
+  try {
+    const draws = await load(g);
+    $('sd').min = draws.at(-1).d; $('sd').max = draws[0].d;
+    if (g === 'wflclassico') {   // solo le ore in cui c'è stata un'estrazione nel giorno scelto
+      const hs = [...new Set(draws.filter(x => x.d === $('sd').value).map(x => x.h))].sort();
+      $('sh').innerHTML = '<option value="">Tutte le ore</option>' + hs.map(h => `<option>${h}</option>`).join('');
+    }
+  } catch { /* offline: la ricerca segnalerà il problema */ }
+}
+
+async function cerca() {
+  const g = $('sg').value, out = $('sout'); out.textContent = 'Ricerca…';
+  try {
+    const draws = await load(g), d = $('sd').value, h = g === 'wflclassico' ? $('sh').value : '', n = +$('sn').value;
+    let m;
+    if (d) {
+      m = draws.filter(x => x.d === d && (!h || x.h === h));
+      if (!m.length) {
+        const t = Date.parse(d), near = draws.reduce((a, x) => Math.abs(Date.parse(x.d) - t) < Math.abs(Date.parse(a.d) - t) ? x : a);
+        out.innerHTML = `<p class="mu">Nessuna estrazione ${h ? 'alle ' + h + ' ' : ''}del ${fmt(d)}. Storico disponibile dal ${fmt(draws.at(-1).d)} al ${fmt(draws[0].d)}. La più vicina:</p><div class="grid">${card(g, near)}</div>`;
+        return;
+      }
+    } else if (n) m = draws.filter(x => x.n === n);
+    else { out.textContent = 'Scegli una data oppure un numero di estrazione.'; return; }
+    out.innerHTML = m.length
+      ? `<p class="mu">${m.length} risultat${m.length > 1 ? 'i' : 'o'}${m.length > 30 ? ' (primi 30)' : ''}</p><div class="grid">${m.slice(0, 30).map(x => card(g, x)).join('')}</div>`
+      : 'Nessun risultato.';
+  } catch { out.textContent = 'Storico non disponibile offline: riprova con la connessione attiva.'; }
+}
+
+$('sg').innerHTML = Object.entries(GAMES).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+$('shl').style.display = 'none';
+$('sg').onchange = aggiornaRicerca; $('sd').onchange = aggiornaRicerca; $('sgo').onclick = cerca;
+
 init();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

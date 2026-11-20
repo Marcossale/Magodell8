@@ -37,5 +37,13 @@ table{border-collapse:collapse;width:100%}td,th{padding:4px 8px;text-align:left;
 <label>&nbsp;<button id="go">Calcola</button></label></div>
 <div id="out"></div>
 <p class="mu">Le estrazioni sono indipendenti: ritardi e frequenze non aumentano la probabilità di vincita. Strumento a scopo informativo.</p></div>
+<div class="card" style="margin-top:12px"><h2>Cerca estrazione</h2>
+<div class="row">
+<label>Gioco<select id="sg"></select></label>
+<label>Data<input id="sd" type="date"></label>
+<label id="shl">Ora<select id="sh"></select></label>
+<label>oppure n. estrazione<input id="sn" type="number" min="1" style="width:120px"></label>
+<label>&nbsp;<button id="sgo">Cerca</button></label></div>
+<div id="sout"></div></div>
 <script src="app.js"></script>
 </body></html>
