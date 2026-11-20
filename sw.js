@@ -1,5 +1,5 @@
 // Service worker: shell dell'app in cache (aggiornata in background), dati con rete prima e cache come riserva offline.
-const CACHE = 'magodel8-v3';
+const CACHE = 'magodel8-v4';
 const SHELL = ['./', 'index.html', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -10,7 +10,8 @@ self.addEventListener('activate', e => {
 });
 self.addEventListener('fetch', e => {
   const req = e.request, url = new URL(req.url);
-  if (req.method !== 'GET' || url.origin !== location.origin) return;
+  const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';   // font del titolo, tenuti in cache per l'offline
+  if (req.method !== 'GET' || (url.origin !== location.origin && !isFont)) return;
   const isData = url.pathname.includes('/data/');
   e.respondWith(caches.open(CACHE).then(async c => {
     const hit = await c.match(req);
