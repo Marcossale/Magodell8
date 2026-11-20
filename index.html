@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MagoDelL8</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--tx:#1d2330;--mu:#6b7385;--ac:#2a5bd7;--ball:#e8edfb}
+@media(prefers-color-scheme:dark){:root{--bg:#12151c;--card:#1c212c;--tx:#e8ebf2;--mu:#98a0b3;--ac:#7aa2ff;--ball:#2a3350}}
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:var(--bg);color:var(--tx);padding:16px;max-width:900px;margin:auto}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:0 0 8px}.mu{color:var(--mu);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:14px 0}
+.card{background:var(--card);border-radius:12px;padding:14px}
+.b{display:inline-flex;width:30px;height:30px;border-radius:50%;background:var(--ball);align-items:center;justify-content:center;font-weight:600;margin:2px;font-size:13px}
+.b.x{background:var(--ac);color:#fff}
+.w{display:flex;gap:6px;align-items:center;font-size:12px}.w>span:first-child{width:62px;color:var(--mu)}
+.row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}label{display:flex;flex-direction:column;font-size:12px;color:var(--mu);gap:3px}
+select,input,button{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--mu);background:var(--card);color:var(--tx)}
+button{background:var(--ac);color:#fff;border:0;cursor:pointer}
+table{border-collapse:collapse;width:100%}td,th{padding:4px 8px;text-align:left;border-bottom:1px solid var(--ball)}
+.bar{height:8px;background:var(--ac);border-radius:4px}
+</style></head><body>
+<h1>MagoDelL8</h1><div class="mu" id="upd"></div>
+<div class="grid" id="cards"></div>
+<div class="card"><h2>Richiedi statistica o combinazione</h2>
+<div class="row">
+<label>Gioco<select id="g"></select></label>
+<label id="wl">Ruota<select id="w"></select></label>
+<label>Richiesta<select id="t"></select></label>
+<label>Quanti numeri<input id="n" type="number" min="1" value="6" style="width:80px"></label>
+<label>Ultime N estrazioni<input id="last" type="number" min="1" placeholder="tutte" style="width:100px"></label>
+<label>&nbsp;<button id="go">Calcola</button></label></div>
+<div id="out"></div>
+<p class="mu">Le estrazioni sono indipendenti: ritardi e frequenze non aumentano la probabilità di vincita.</p></div>
+<script src="data.js"></script>
+<script>
+const WHEELS=['Bari','Cagliari','Firenze','Genova','Milano','Napoli','Palermo','Roma','Torino','Venezia','Nazionale'];
+const GAMES={
+ lotto:{name:'Lotto',max:90,pick:5},superenalotto:{name:'SuperEnalotto',max:90,pick:6},
+ vincicasa:{name:'Vinci Casa',max:40,pick:5},wflclassico:{name:'Win for Life Classico',max:20,pick:10},
+ superwfl:{name:'Super Win for Life',max:90,pick:8}};
+const $=id=>document.getElementById(id),D=window.DATA;
+const balls=(a,c='')=>a.map(x=>`<span class="b ${c}">${x}</span>`).join('');
+// serie di estrazioni (più recente prima) come array di numeri; Lotto: ruota o tutte
+const series=(g,w)=>D[g].map(d=>g==='lotto'?(w==='Tutte'?[...new Set(Object.values(d.wheels).flat())]:d.wheels[w]||[]):d.nums);
+const nums=g=>Array.from({length:GAMES[g].max},(_,i)=>i+1);
+const delays=s=>Object.fromEntries(Object.entries(freq(s)).map(([k])=>{const i=s.findIndex(x=>x.includes(+k));return[k,i<0?s.length:i]}));
+const freq=s=>{const f={};s.forEach(x=>x.forEach(v=>f[v]=(f[v]||0)+1));return f};
+const full=(g,s,fn)=>nums(g).map(k=>[k,fn(k)]);
+// registro statistiche e combinazioni: aggiungere una voce = nuova funzione
+const TYPES={
+ ritardi:{label:'Ritardi (estrazioni senza uscire)',run:(g,s)=>({table:full(g,s,k=>{const i=s.findIndex(x=>x.includes(k));return i<0?s.length:i}).sort((a,b)=>b[1]-a[1]),unit:'estr.'})},
+ frequenze:{label:'Frequenze (uscite)',run:(g,s)=>({table:full(g,s,k=>s.filter(x=>x.includes(k)).length).sort((a,b)=>b[1]-a[1]),unit:'volte'})},
+ casuale:{label:'Combinazione casuale',run:(g,s,n)=>({combo:[...nums(g)].sort(()=>Math.random()-.5).slice(0,n)})},
+ comboRit:{label:'Combinazione: più ritardatari',run:(g,s,n)=>({combo:TYPES.ritardi.run(g,s).table.slice(0,n).map(x=>x[0])})},
+ comboFreq:{label:'Combinazione: più frequenti',run:(g,s,n)=>({combo:TYPES.frequenze.run(g,s).table.slice(0,n).map(x=>x[0])})},
+ comboMeno:{label:'Combinazione: meno frequenti',run:(g,s,n)=>({combo:TYPES.frequenze.run(g,s).table.slice(-n).map(x=>x[0])})}};
+$('upd').textContent='Dati aggiornati al '+new Date(D.updated).toLocaleString('it-IT');
+$('cards').innerHTML=Object.keys(GAMES).map(g=>{const d=D[g][0];
+ const body=g==='lotto'?Object.entries(d.wheels).map(([w,a])=>`<div class="w"><span>${w}</span><span>${balls(a)}</span></div>`).join(''):balls(d.nums)+(d.extra?balls([d.extra],'x'):'');
+ return`<div class="card"><h2>${GAMES[g].name}</h2><div class="mu">n. ${d.n} · ${d.date}${d.ora?' · '+d.ora:''}</div>${body}</div>`}).join('');
+$('g').innerHTML=Object.entries(GAMES).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+$('w').innerHTML=['Tutte',...WHEELS].map(w=>`<option>${w}</option>`).join('');
+$('t').innerHTML=Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
+const sync=()=>{const g=$('g').value;$('wl').style.display=g==='lotto'?'':'none';$('n').max=GAMES[g].max;$('n').value=GAMES[g].pick};
+$('g').onchange=sync;sync();
+$('go').onclick=()=>{const g=$('g').value;let s=series(g,$('w').value);const L=+$('last').value;if(L>0)s=s.slice(0,L);
+ const r=TYPES[$('t').value].run(g,s,Math.min(+$('n').value||1,GAMES[g].max));
+ if(r.combo)$('out').innerHTML=`<div class="mu">Su ${s.length} estrazioni analizzate</div>`+balls(r.combo.sort((a,b)=>a-b),'x');
+ else{const m=Math.max(...r.table.map(x=>x[1]))||1;$('out').innerHTML=`<div class="mu">Su ${s.length} estrazioni analizzate</div><table>`+r.table.slice(0,15).map(([k,v])=>`<tr><td>${balls([k])}</td><td style="width:60%"><div class="bar" style="width:${v/m*100}%"></div></td><td>${v} ${r.unit}</td></tr>`).join('')+'</table>'}};
+</script></body></html>
