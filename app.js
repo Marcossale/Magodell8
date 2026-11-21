@@ -104,6 +104,19 @@ async function cerca() {
   } catch { out.textContent = 'Storico non disponibile offline: riprova con la connessione attiva.'; }
 }
 
+// Dimensione dei numeri estratti (pulsanti A− / A+ in cima), ricordata sul dispositivo.
+const SIZES = [24, 30, 38, 46, 56];
+let si = 1;
+try { const v = +localStorage.getItem('bs'); if (SIZES.includes(v)) si = SIZES.indexOf(v); } catch { /* storage non disponibile */ }
+function applyZoom() {
+  document.documentElement.style.setProperty('--bs', SIZES[si] + 'px');
+  $('zm').disabled = si === 0; $('zp').disabled = si === SIZES.length - 1;
+  try { localStorage.setItem('bs', SIZES[si]); } catch { /* ignora */ }
+}
+$('zm').onclick = () => { si--; applyZoom(); };
+$('zp').onclick = () => { si++; applyZoom(); };
+applyZoom();
+
 // Mostra una singola estrazione con le frecce per passare alla precedente (◀) o alla successiva (▶) dello stesso gioco.
 let cur = null;
 async function mostra(g, i, nota = '') {
