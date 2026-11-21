@@ -35,7 +35,7 @@ function card(g, d) {
   const body = g === 'lotto'
     ? WHEELS.map((w, i) => `<div class="w"><span>${w}</span><span>${balls(d.w[i])}</span></div>`).join('')
     : balls(d.x) + (d.e ? balls([d.e], 'x') : '') + (d.j ? `<div class="mu">Jolly ${d.j}${d.s != null ? ' · SuperStar ' + d.s : ''}</div>` : '');
-  return `<div class="card"><h2>${GAMES[g].name}</h2><div class="mu">n. ${d.n} · ${fmt(d.d)}${d.h ? ' · ' + d.h : ''}</div>${body}</div>`;
+  return `<div class="card dr"><h2>${GAMES[g].name}</h2><div class="mu">n. ${d.n} · ${fmt(d.d)}${d.h ? ' · ' + d.h : ''}</div>${body}</div>`;
 }
 
 async function init() {
@@ -110,6 +110,7 @@ let si = 1;
 try { const v = +localStorage.getItem('bs'); if (SIZES.includes(v)) si = SIZES.indexOf(v); } catch { /* storage non disponibile */ }
 function applyZoom() {
   document.documentElement.style.setProperty('--bs', SIZES[si] + 'px');
+  document.documentElement.style.setProperty('--ts', SIZES[si] / 30);   // fattore per le scritte delle estrazioni
   $('zm').disabled = si === 0; $('zp').disabled = si === SIZES.length - 1;
   try { localStorage.setItem('bs', SIZES[si]); } catch { /* ignora */ }
 }

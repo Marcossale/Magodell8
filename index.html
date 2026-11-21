@@ -19,7 +19,10 @@ h1{font:700 32px/1.15 "Cinzel Decorative","Palatino Linotype",Georgia,serif;lett
 h2{font-size:15px;margin:0 0 8px}.mu{color:var(--mu);font-size:13px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:14px 0}
 .card{background:var(--card);border-radius:12px;padding:14px}
-:root{--bs:30px}
+:root{--bs:30px;--ts:1}
+.dr h2{font-size:calc(15px*var(--ts))}.dr .mu,#out .mu,#sout .mu{font-size:calc(13px*var(--ts))}
+.dr .w{font-size:calc(12px*var(--ts))}.dr .w>span:first-child{width:calc(62px*var(--ts))}
+#out table{font-size:calc(15px*var(--ts))}
 .b{display:inline-flex;width:var(--bs);height:var(--bs);border-radius:50%;background:var(--ball);align-items:center;justify-content:center;font-weight:600;margin:2px;font-size:calc(var(--bs)*.43)}
 .zoom{display:flex;align-items:center;gap:8px;margin:10px 0 0}.zoom button{padding:4px 14px;font-weight:700}
 .b.x{background:var(--ac);color:#fff}
@@ -33,7 +36,7 @@ table{border-collapse:collapse;width:100%}td,th{padding:4px 8px;text-align:left;
 .bar{height:8px;background:var(--ac);border-radius:4px}
 </style></head><body>
 <h1>MagoDelL8</h1><p class="sub">App dedicata a mia Mamma Rosa</p><div class="mu" id="upd">Caricamento…</div>
-<div class="zoom"><span class="mu">Dimensione numeri</span><button id="zm" aria-label="Riduci i numeri" title="Riduci">A−</button><button id="zp" aria-label="Ingrandisci i numeri" title="Ingrandisci">A+</button></div>
+<div class="zoom"><span class="mu">Dimensione numeri e scritte</span><button id="zm" aria-label="Riduci numeri e scritte" title="Riduci">A−</button><button id="zp" aria-label="Ingrandisci numeri e scritte" title="Ingrandisci">A+</button></div>
 <div class="grid" id="cards"></div>
 <div class="card"><h2>Richiedi statistica o combinazione</h2>
 <div class="row">

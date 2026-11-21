@@ -1,5 +1,5 @@
 // Service worker: shell dell'app in cache (aggiornata in background), dati con rete prima e cache come riserva offline.
-const CACHE = 'magodel8-v6';
+const CACHE = 'magodel8-v7';
 const SHELL = ['./', 'index.html', 'app.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
