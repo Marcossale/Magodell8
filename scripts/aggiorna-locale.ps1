@@ -26,7 +26,7 @@ try {
     Esegui 'git push origin main'
     "$(Get-Date -Format s) aggiornato e pubblicato" | Add-Content $log
   } else {
-    "$(Get-Date -Format s) nessuna novità" | Add-Content $log
+    "$(Get-Date -Format s) nessuna novita" | Add-Content $log
   }
 } catch {
   "$(Get-Date -Format s) ERRORE: $($_.Exception.Message)" | Add-Content $log
