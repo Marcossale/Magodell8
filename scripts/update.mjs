@@ -18,7 +18,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const iso = s => s.split('/').reverse().join('-');
 
 async function get(path) {
-  for (let t = 1; t <= 3; t++) {
+  for (let t = 1; t <= 4; t++) {
     try {
       const r = await fetch(B + path, { headers: { 'User-Agent': 'Mozilla/5.0 (MagoDelL8 aggiornamento storico)' } });
       if (r.status === 404) return null;
@@ -72,8 +72,8 @@ const wanted = process.argv.slice(2).length ? process.argv.slice(2) : Object.key
 const thisYear = new Date().getFullYear();
 let changed = false;
 
-for (const g of wanted) {
-  const cfg = GAMES[g]; if (!cfg) throw new Error('Gioco sconosciuto: ' + g);
+async function aggiorna(g) {
+  const cfg = GAMES[g];
   const file = `data/${g}.json`;
   const old = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')).draws : [];
   const start = old.length ? Math.max(cfg.from, +old[0].d.slice(0, 4)) : cfg.from;
@@ -92,6 +92,14 @@ for (const g of wanted) {
   console.log(`${g}: totale ${draws.length}, ultima ${draws[0].d} n.${draws[0].n}`);
 }
 
+// Un gioco in errore non blocca gli altri: i suoi dati restano quelli di prima e il giro successivo riprova.
+const failed = [];
+for (const g of wanted) {
+  if (!GAMES[g]) throw new Error('Gioco sconosciuto: ' + g);
+  try { await aggiorna(g); }
+  catch (e) { failed.push(g); console.error(`::warning title=Aggiornamento ${g} fallito::${e.message}`); }
+}
+
 // ultima estrazione di ogni gioco, per la dashboard (file piccolo)
 const last = {};
 for (const g of Object.keys(GAMES)) {
@@ -104,3 +112,5 @@ if (prevLast !== JSON.stringify(last)) {
   fs.writeFileSync('data/last.json', JSON.stringify({ updated: stamp, draws: last }) + '\n');
 }
 console.log(changed ? 'Dati aggiornati.' : 'Nessuna novità.');
+if (failed.length) console.log('Giochi non aggiornati in questo giro: ' + failed.join(', '));
+if (failed.length === wanted.length) process.exit(1);   // errore vero solo se non si è aggiornato nulla
