@@ -2,7 +2,7 @@ name: Aggiorna estrazioni
 
 on:
   schedule:
-    - cron: '10 8-21 * * *'   # ogni ora al minuto 10, dalle 08 alle 21 UTC (copre le estrazioni serali e Win for Life)
+    - cron: '10 * * * *'   # ogni ora, al minuto 10 (24 ore su 24, orario UTC)
   workflow_dispatch:
 
 permissions:
