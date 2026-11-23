@@ -18,15 +18,18 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 const iso = s => s.split('/').reverse().join('-');
 
 async function get(path) {
+  let motivo = '';
   for (let t = 1; t <= 4; t++) {
     try {
-      const r = await fetch(B + path, { headers: { 'User-Agent': 'Mozilla/5.0 (MagoDelL8 aggiornamento storico)' } });
+      // timeout: una richiesta appesa non deve bloccare l'intero aggiornamento
+      const r = await fetch(B + path, { headers: { 'User-Agent': 'Mozilla/5.0 (MagoDelL8 aggiornamento storico)' }, signal: AbortSignal.timeout(30000) });
       if (r.status === 404) return null;
       if (r.ok) return await r.text();
-    } catch { /* riprova */ }
+      motivo = 'HTTP ' + r.status;
+    } catch (e) { motivo = e.name === 'TimeoutError' ? 'timeout 30s' : e.message; }
     await sleep(2000 * t);
   }
-  throw new Error('Download fallito: ' + path);
+  throw new Error(`Download fallito (${motivo}): ${path}`);
 }
 
 // palline: [{cls, n}] nell'ordine della pagina (ignora i titoli ruota)
