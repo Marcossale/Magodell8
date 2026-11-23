@@ -6,7 +6,8 @@ import fs from 'fs';
 const B = 'https://www.estrazionedellotto.it';
 const WHEELS = ['Bari', 'Cagliari', 'Firenze', 'Genova', 'Milano', 'Napoli', 'Palermo', 'Roma', 'Torino', 'Venezia', 'Nazionale'];
 const GAMES = {
-  lotto:         { from: 2005, // dal 2005 esistono tutte e 11 le ruote (Nazionale inclusa) path: y => `/risultati/archivio-lotto-${y}` },
+  // Lotto dal 2005: da allora esistono tutte e 11 le ruote (Nazionale inclusa)
+  lotto:         { from: 2005, path: y => `/risultati/archivio-lotto-${y}` },
   superenalotto: { from: 1997, path: y => `/superenalotto/risultati/archivio-superenalotto-${y}` },
   vincicasa:     { from: 2014, path: y => `/vinci-casa/risultati/archivio-vinci-casa-${y}` },
   wflclassico:   { from: 2024, path: y => `/win-for-life-classico/risultati/archivio-win-for-life-classico-${y}` },
