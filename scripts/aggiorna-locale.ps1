@@ -1,7 +1,11 @@
 # Aggiorna le estrazioni dal PC (il sito blocca gli IP di GitHub Actions) e pubblica i dati su main.
 # Lavora in un clone dedicato, separato dalla cartella di sviluppo, così non tocca le tue modifiche.
-# Uso: powershell -File scripts\aggiorna-locale.ps1
+# Gira solo dalle 8:00 alle 23:10 (ora del PC); fuori da questa fascia esce senza fare nulla.
+# Uso: powershell -File scripts\aggiorna-locale.ps1 [-Forza]   (-Forza ignora la fascia oraria)
+param([switch]$Forza)
 $ErrorActionPreference = 'Stop'
+$min = (Get-Date).Hour * 60 + (Get-Date).Minute
+if (-not $Forza -and ($min -lt 8 * 60 -or $min -gt 23 * 60 + 10)) { exit 0 }
 $repo = 'https://github.com/Marcossale/Magodell8.git'
 $dir  = Join-Path $env:LOCALAPPDATA 'MagoDelL8-auto'
 $log  = Join-Path $dir '..\MagoDelL8-auto.log'
